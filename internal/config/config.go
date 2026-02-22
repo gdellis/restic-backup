@@ -17,10 +17,10 @@ type Identity struct {
 }
 
 type Config struct {
-	Version      int           `json:"version"`
-	Identity     *Identity     `json:"identity,omitempty"`
-	Repositories []Repository  `json:"repositories"`
-	Settings     *Settings     `json:"settings,omitempty"`
+	Version      int          `json:"version"`
+	Identity     *Identity    `json:"identity,omitempty"`
+	Repositories []Repository `json:"repositories"`
+	Settings     *Settings    `json:"settings,omitempty"`
 }
 
 type Repository struct {
@@ -32,36 +32,36 @@ type Repository struct {
 	PasswordEnv string            `json:"password_env,omitempty"`
 	PasswordOP  string            `json:"password_op,omitempty"`
 	Options     map[string]string `json:"options,omitempty"`
-	BackupPaths []string         `json:"backup_paths,omitempty"`
-	Exclude     []string         `json:"exclude,omitempty"`
-	Tags        []string         `json:"tags,omitempty"`
-	Schedule    string           `json:"schedule,omitempty"`
-	Retention   *RetentionPolicy `json:"retention,omitempty"`
-	CreatedAt   string           `json:"created_at"`
-	UpdatedAt   string           `json:"updated_at"`
+	BackupPaths []string          `json:"backup_paths,omitempty"`
+	Exclude     []string          `json:"exclude,omitempty"`
+	Tags        []string          `json:"tags,omitempty"`
+	Schedule    string            `json:"schedule,omitempty"`
+	Retention   *RetentionPolicy  `json:"retention,omitempty"`
+	CreatedAt   string            `json:"created_at"`
+	UpdatedAt   string            `json:"updated_at"`
 }
 
 type RetentionPolicy struct {
-	KeepLast     int `json:"keep_last"`
-	KeepDaily    int `json:"keep_daily"`
-	KeepWeekly   int `json:"keep_weekly"`
-	KeepMonthly  int `json:"keep_monthly"`
-	KeepYearly   int `json:"keep_yearly"`
-	KeepTags     []string `json:"keep_tags"`
+	KeepLast    int      `json:"keep_last"`
+	KeepDaily   int      `json:"keep_daily"`
+	KeepWeekly  int      `json:"keep_weekly"`
+	KeepMonthly int      `json:"keep_monthly"`
+	KeepYearly  int      `json:"keep_yearly"`
+	KeepTags    []string `json:"keep_tags"`
 }
 
 type Settings struct {
-	ResticPath      string `json:"restic_path,omitempty"`
-	DefaultBackend  string `json:"default_backend"`
+	ResticPath     string         `json:"restic_path,omitempty"`
+	DefaultBackend string         `json:"default_backend"`
 	Notifications  *Notifications `json:"notifications,omitempty"`
-	Theme          string `json:"theme"`
+	Theme          string         `json:"theme"`
 }
 
 type Notifications struct {
-	Enabled    bool     `json:"enabled"`
-	OnSuccess  bool     `json:"on_success"`
-	OnFailure  bool     `json:"on_failure"`
-	WebhookURL string   `json:"webhook_url,omitempty"`
+	Enabled    bool        `json:"enabled"`
+	OnSuccess  bool        `json:"on_success"`
+	OnFailure  bool        `json:"on_failure"`
+	WebhookURL string      `json:"webhook_url,omitempty"`
 	SMTP       *SMTPConfig `json:"smtp,omitempty"`
 }
 

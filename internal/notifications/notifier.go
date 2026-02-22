@@ -47,30 +47,30 @@ func (n *WebhookNotifier) Send(subject, body string) error {
 		"subject": subject,
 		"body":    body,
 	}
-	
+
 	jsonData, err := json.Marshal(payload)
 	if err != nil {
 		return fmt.Errorf("failed to marshal payload: %w", err)
 	}
-	
+
 	req, err := http.NewRequest(n.Method, n.URL, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return fmt.Errorf("failed to create request: %w", err)
 	}
-	
+
 	req.Header.Set("Content-Type", "application/json")
-	
+
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		return fmt.Errorf("failed to send request: %w", err)
 	}
 	defer resp.Body.Close()
-	
+
 	if resp.StatusCode >= 400 {
 		return fmt.Errorf("webhook returned status: %d", resp.StatusCode)
 	}
-	
+
 	return nil
 }
 
@@ -115,21 +115,21 @@ func SendNotification(event string, config *Config) error {
 	if config == nil || !config.Enabled {
 		return nil
 	}
-	
+
 	if event == "success" && !config.OnSuccess {
 		return nil
 	}
 	if event == "failure" && !config.OnFailure {
 		return nil
 	}
-	
+
 	subject := fmt.Sprintf("Restic Backup: %s", event)
 	body := fmt.Sprintf("Backup %s at %s", event, os.Getenv("HOSTNAME"))
-	
+
 	if config.WebhookURL != "" {
 		notifier := NewWebhookNotifier(config.WebhookURL)
 		return notifier.Send(subject, body)
 	}
-	
+
 	return nil
 }

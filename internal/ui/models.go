@@ -18,10 +18,10 @@ type DashboardModel struct {
 }
 
 type RepoStats struct {
-	LastBackup   time.Time
+	LastBackup    time.Time
 	SnapshotCount int
-	TotalSize   int64
-	Status      string
+	TotalSize     int64
+	Status        string
 }
 
 func NewDashboardModel() DashboardModel {
@@ -37,10 +37,10 @@ func (m DashboardModel) Update(msg tea.Msg) (DashboardModel, tea.Cmd) {
 
 func (m DashboardModel) View() string {
 	header := TitleStyle.Render("Dashboard")
-	
+
 	menuItems := GetMenuItems(ScreenDashboard)
 	menu := renderMenu(menuItems, 0)
-	
+
 	var repoList string
 	for i, r := range m.repos {
 		prefix := "  "
@@ -49,7 +49,7 @@ func (m DashboardModel) View() string {
 		}
 		repoList += prefix + r + "\n"
 	}
-	
+
 	content := lipgloss.JoinVertical(
 		lipgloss.Left,
 		header,
@@ -58,7 +58,7 @@ func (m DashboardModel) View() string {
 		"",
 		BorderStyle.Render(repoList),
 	)
-	
+
 	return content
 }
 
@@ -91,8 +91,8 @@ type RepoForm struct {
 
 func NewReposModel() ReposModel {
 	return ReposModel{
-		repos:   []string{},
-		form:    RepoForm{},
+		repos: []string{},
+		form:  RepoForm{},
 	}
 }
 
@@ -122,7 +122,7 @@ func (m ReposModel) View() string {
 	header := TitleStyle.Render("Repositories")
 	menuItems := GetMenuItems(ScreenRepositories)
 	menu := renderMenu(menuItems, 1)
-	
+
 	var content string
 	if m.editing {
 		content = BorderStyle.Render(m.renderForm())
@@ -140,7 +140,7 @@ func (m ReposModel) View() string {
 		}
 		content = BorderStyle.Render(repoList)
 	}
-	
+
 	return lipgloss.JoinVertical(
 		lipgloss.Left,
 		header,
@@ -192,19 +192,19 @@ func (m ReposModel) GetFormData() config.Repository {
 		Password:    m.form.Password,
 		PasswordEnv: m.form.PasswordEnv,
 	}
-	
+
 	if m.form.BackupPaths != "" {
 		repo.BackupPaths = splitCommaList(m.form.BackupPaths)
 	}
-	
+
 	if m.form.Exclude != "" {
 		repo.Exclude = splitCommaList(m.form.Exclude)
 	}
-	
+
 	if m.form.Tags != "" {
 		repo.Tags = splitCommaList(m.form.Tags)
 	}
-	
+
 	return repo
 }
 
@@ -252,11 +252,11 @@ func (m BackupModel) Update(msg tea.Msg) (BackupModel, tea.Cmd) {
 			m.progress = "Starting backup..."
 		}
 	}
-	
+
 	if m.inProgress {
 		m.progress = "Backup in progress..."
 	}
-	
+
 	return m, nil
 }
 
@@ -264,7 +264,7 @@ func (m BackupModel) View() string {
 	header := TitleStyle.Render("Backup")
 	menuItems := GetMenuItems(ScreenBackup)
 	menu := renderMenu(menuItems, 2)
-	
+
 	var content string
 	if m.inProgress {
 		content = BorderStyle.Render(
@@ -303,7 +303,7 @@ func (m BackupModel) View() string {
 			),
 		)
 	}
-	
+
 	return lipgloss.JoinVertical(
 		lipgloss.Left,
 		header,
@@ -366,19 +366,19 @@ func (m *BackupModel) Complete(success bool) {
 }
 
 type RestoreModel struct {
-	repos         []string
+	repos           []string
 	selectedRepoIdx int
-	snapshots     []string
+	snapshots       []string
 	selectedSnapIdx int
-	target        string
-	showSnapshots bool
+	target          string
+	showSnapshots   bool
 }
 
 func NewRestoreModel() RestoreModel {
 	return RestoreModel{
-		repos:         []string{},
-		snapshots:     []string{},
-		target:        "",
+		repos:     []string{},
+		snapshots: []string{},
+		target:    "",
 	}
 }
 
@@ -409,7 +409,7 @@ func (m RestoreModel) View() string {
 	header := TitleStyle.Render("Restore")
 	menuItems := GetMenuItems(ScreenRestore)
 	menu := renderMenu(menuItems, 3)
-	
+
 	var content string
 	if m.showSnapshots {
 		var snapList string
@@ -453,7 +453,7 @@ func (m RestoreModel) View() string {
 			),
 		)
 	}
-	
+
 	return lipgloss.JoinVertical(
 		lipgloss.Left,
 		header,
@@ -508,7 +508,7 @@ type SnapshotsModel struct {
 
 func NewSnapshotsModel() SnapshotsModel {
 	return SnapshotsModel{
-		repos:   []string{},
+		repos:     []string{},
 		snapshots: []string{},
 	}
 }
@@ -538,7 +538,7 @@ func (m SnapshotsModel) View() string {
 	header := TitleStyle.Render("Snapshots")
 	menuItems := GetMenuItems(ScreenSnapshots)
 	menu := renderMenu(menuItems, 4)
-	
+
 	var repoList string
 	for i, r := range m.repos {
 		prefix := "  "
@@ -547,7 +547,7 @@ func (m SnapshotsModel) View() string {
 		}
 		repoList += prefix + r + "\n"
 	}
-	
+
 	var snapList string
 	for i, s := range m.snapshots {
 		prefix := "  "
@@ -559,7 +559,7 @@ func (m SnapshotsModel) View() string {
 	if snapList == "" {
 		snapList = "  No snapshots"
 	}
-	
+
 	filters := lipgloss.JoinVertical(
 		lipgloss.Left,
 		lipgloss.Style{}.Foreground(lipgloss.Color("99")).Bold(true).Render("Filters:"),
@@ -567,7 +567,7 @@ func (m SnapshotsModel) View() string {
 		"Path: "+m.pathFilter,
 		"Tag:  "+m.tagFilter,
 	)
-	
+
 	content := BorderStyle.Render(
 		lipgloss.JoinVertical(
 			lipgloss.Left,
@@ -580,7 +580,7 @@ func (m SnapshotsModel) View() string {
 			snapList,
 		),
 	)
-	
+
 	return lipgloss.JoinVertical(
 		lipgloss.Left,
 		header,
@@ -623,17 +623,17 @@ func (m SnapshotsModel) GetSelectedSnapshot() string {
 }
 
 type RetentionModel struct {
-	repos         []string
+	repos           []string
 	selectedRepoIdx int
-	keepLast     int
-	keepDaily    int
-	keepWeekly   int
-	keepMonthly  int
-	keepYearly   int
-	keepTags     string
-	prune        bool
-	dryRun       bool
-	previewMode  bool
+	keepLast        int
+	keepDaily       int
+	keepWeekly      int
+	keepMonthly     int
+	keepYearly      int
+	keepTags        string
+	prune           bool
+	dryRun          bool
+	previewMode     bool
 }
 
 func NewRetentionModel() RetentionModel {
@@ -643,10 +643,10 @@ func NewRetentionModel() RetentionModel {
 		keepDaily:   7,
 		keepWeekly:  4,
 		keepMonthly: 6,
-		keepYearly: 3,
-		keepTags:   "",
-		prune:      false,
-		dryRun:     true,
+		keepYearly:  3,
+		keepTags:    "",
+		prune:       false,
+		dryRun:      true,
 		previewMode: true,
 	}
 }
@@ -678,7 +678,7 @@ func (m RetentionModel) View() string {
 	header := TitleStyle.Render("Retention Policy")
 	menuItems := GetMenuItems(ScreenRetention)
 	menu := renderMenu(menuItems, 5)
-	
+
 	var repoList string
 	for i, r := range m.repos {
 		prefix := "  "
@@ -690,17 +690,17 @@ func (m RetentionModel) View() string {
 	if repoList == "" {
 		repoList = "  No repositories configured"
 	}
-	
+
 	pruneStatus := "Disabled"
 	if m.prune {
 		pruneStatus = "Enabled"
 	}
-	
+
 	dryRunStatus := "Preview Only"
 	if !m.dryRun {
 		dryRunStatus = "Apply Now"
 	}
-	
+
 	content := BorderStyle.Render(
 		lipgloss.JoinVertical(
 			lipgloss.Left,
@@ -722,7 +722,7 @@ func (m RetentionModel) View() string {
 			InfoStyle.Render("p: Toggle prune • d: Toggle dry-run • Enter: Confirm"),
 		),
 	)
-	
+
 	return lipgloss.JoinVertical(
 		lipgloss.Left,
 		header,
@@ -752,7 +752,7 @@ func (m RetentionModel) GetSelectedRepo() string {
 
 func (m RetentionModel) GetForgetOptions() []restic.ForgetOption {
 	opts := []restic.ForgetOption{}
-	
+
 	if m.keepLast > 0 {
 		opts = append(opts, restic.ForgetKeepLast(m.keepLast))
 	}
@@ -768,33 +768,33 @@ func (m RetentionModel) GetForgetOptions() []restic.ForgetOption {
 	if m.keepYearly > 0 {
 		opts = append(opts, restic.ForgetKeepYearly(m.keepYearly))
 	}
-	
+
 	if m.dryRun {
 		opts = append(opts, restic.ForgetDryRun())
 	}
-	
+
 	if m.prune {
 		opts = append(opts, restic.ForgetPrune())
 	}
-	
+
 	return opts
 }
 
 type SettingsModel struct {
 	resticPath     string
 	defaultBackend string
-	themeIdx      int
-	notifEnabled  bool
-	showAdvanced  bool
-	showNotif     bool
+	themeIdx       int
+	notifEnabled   bool
+	showAdvanced   bool
+	showNotif      bool
 }
 
 func NewSettingsModel() SettingsModel {
 	return SettingsModel{
 		resticPath:     "restic",
 		defaultBackend: "local",
-		themeIdx:      0,
-		notifEnabled:  false,
+		themeIdx:       0,
+		notifEnabled:   false,
 	}
 }
 
@@ -819,14 +819,14 @@ func (m SettingsModel) View() string {
 	header := TitleStyle.Render("Settings")
 	menuItems := GetMenuItems(ScreenSettings)
 	menu := renderMenu(menuItems, 5)
-	
+
 	var content string
 	if m.showNotif {
 		content = BorderStyle.Render(m.renderNotificationSettings())
 	} else {
 		content = BorderStyle.Render(m.renderGeneralSettings())
 	}
-	
+
 	return lipgloss.JoinVertical(
 		lipgloss.Left,
 		header,
@@ -845,7 +845,7 @@ func (m SettingsModel) renderGeneralSettings() string {
 	if m.themeIdx == 1 {
 		theme = "Light"
 	}
-	
+
 	return lipgloss.JoinVertical(
 		lipgloss.Left,
 		lipgloss.Style{}.Foreground(lipgloss.Color("99")).Bold(true).Render("General:"),
@@ -862,7 +862,7 @@ func (m SettingsModel) renderNotificationSettings() string {
 	if m.notifEnabled {
 		notifStatus = SuccessStyle.Render("Enabled")
 	}
-	
+
 	return lipgloss.JoinVertical(
 		lipgloss.Left,
 		lipgloss.Style{}.Foreground(lipgloss.Color("99")).Bold(true).Render("Notifications:"),
@@ -890,11 +890,11 @@ func (m SettingsModel) GetSettings() *config.Settings {
 	if m.themeIdx == 1 {
 		theme = "light"
 	}
-	
+
 	return &config.Settings{
 		ResticPath:     m.resticPath,
 		DefaultBackend: m.defaultBackend,
-		Theme:         theme,
+		Theme:          theme,
 		Notifications: &config.Notifications{
 			Enabled: m.notifEnabled,
 		},
