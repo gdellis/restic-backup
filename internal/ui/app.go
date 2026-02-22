@@ -54,6 +54,85 @@ var (
 	BorderStyle = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(lipgloss.Color("238"))
+
+	ProgressFillStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("42"))
+
+	ProgressEmptyStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("236"))
+
+	SpinnerStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("99"))
+
+	CheckboxCheckedStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("42"))
+
+	CheckboxUncheckedStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("241"))
+
+	SelectTriggerStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("250")).
+				Background(lipgloss.Color("236")).
+				Padding(0, 1)
+
+	SelectCurrentStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("99"))
+
+	SelectOptionStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("250"))
+
+	SelectOptionStyleSelected = lipgloss.NewStyle().
+					Foreground(lipgloss.Color("212")).
+					Background(lipgloss.Color("236"))
+
+	SelectBoxStyle = lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.Color("238"))
+
+	SuccessBadgeStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("22")).
+				Background(lipgloss.Color("70")).
+				Bold(true).
+				Padding(0, 1)
+
+	ErrorBadgeStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("15")).
+			Background(lipgloss.Color("196")).
+			Bold(true).
+			Padding(0, 1)
+
+	WarningBadgeStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("16")).
+				Background(lipgloss.Color("226")).
+				Bold(true).
+				Padding(0, 1)
+
+	InfoBadgeStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("15")).
+			Background(lipgloss.Color("75")).
+			Bold(true).
+			Padding(0, 1)
+
+	ConfirmDialogStyle = lipgloss.NewStyle().
+				Border(lipgloss.DoubleBorder()).
+				BorderForeground(lipgloss.Color("99")).
+				Padding(1, 2)
+
+	ConfirmYesStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("42"))
+
+	ConfirmNoStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("196"))
+
+	ConfirmYesStyleSelected = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("42")).
+				Bold(true).
+				Underline(true)
+
+	ConfirmNoStyleSelected = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("196")).
+				Bold(true).
+				Underline(true)
 )
 
 type Navigation struct {
