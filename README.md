@@ -1,5 +1,7 @@
 # Restic Backup Client
 
+[![OpenCode Review](https://github.com/gdellis/restic-backup/actions/workflows/pr_review.yml/badge.svg)](https://github.com/gdellis/restic-backup/actions/workflows/pr_review.yml)
+
 A Go-based TUI (Terminal User Interface) restic backup client built with Bubble Tea. Provides an interactive interface for managing backups across multiple repository backends.
 
 ## Features
