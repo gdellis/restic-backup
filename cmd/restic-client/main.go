@@ -190,7 +190,7 @@ func (m *model) startBackupAsync() tea.Cmd {
 	repoName := m.backup.GetSelectedRepo()
 	repo := m.findRepoByName(repoName)
 	if repo == nil {
-		m.backup.SetError("repository not found")
+		m.backup.SetError(fmt.Sprintf("repository %q not found", repoName))
 		return nil
 	}
 
@@ -225,40 +225,6 @@ type backupResultMsg struct {
 	snapshotID string
 	stats      restic.BackupStats
 	error      string
-}
-
-func (m *model) startBackup() {
-	repoName := m.backup.GetSelectedRepo()
-	repo := m.findRepoByName(repoName)
-	if repo == nil {
-		m.err = fmt.Errorf("repository not found")
-		return
-	}
-
-	exec, err := m.getExecutor(repo)
-	if err != nil {
-		m.err = err
-		return
-	}
-
-	ctx := context.Background()
-	paths := m.backup.GetBackupPaths()
-	if len(paths) == 0 && len(repo.BackupPaths) > 0 {
-		paths = repo.BackupPaths
-	}
-
-	opts := []restic.BackupOption{
-		restic.BackupWithExclude(m.backup.GetExcludePatterns()),
-		restic.BackupWithTags(m.backup.GetTags()),
-	}
-
-	result, err := exec.Backup(ctx, paths, opts...)
-	if err != nil {
-		m.err = err
-		return
-	}
-
-	m.backup.SetProgress(fmt.Sprintf("Backup complete: %s", result.SnapshotID))
 }
 
 func (m *model) getExecutor(repo *config.Repository) (*restic.ResticExecutor, error) {
@@ -344,12 +310,12 @@ func formatBytes(bytes int64) string {
 	if bytes < unit {
 		return fmt.Sprintf("%d B", bytes)
 	}
-	div, exp := int64(unit), 0
+	divisor, exp := int64(unit), 0
 	for n := bytes / unit; n >= unit; n /= unit {
-		div *= unit
+		divisor *= unit
 		exp++
 	}
-	return fmt.Sprintf("%.1f %cB", float64(bytes)/float64(div), "KMGTPE"[exp])
+	return fmt.Sprintf("%.1f %cB", float64(bytes)/float64(divisor), "KMGTPE"[exp])
 }
 
 func main() {
