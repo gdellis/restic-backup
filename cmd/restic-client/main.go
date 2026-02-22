@@ -29,7 +29,9 @@ type model struct {
 	retention ui.RetentionModel
 	settings  ui.SettingsModel
 
-	showHelp bool
+	showHelp     bool
+	backupCtx    context.Context
+	backupCancel context.CancelFunc
 }
 
 func newModel() *model {
@@ -89,6 +91,21 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case errorMsg:
 		m.err = msg.err
+		return m, nil
+
+	case backupResultMsg:
+		if m.backupCancel != nil {
+			m.backupCancel()
+			m.backupCancel = nil
+		}
+		if msg.success {
+			m.backup.Complete(true)
+			m.backup.SetProgress(fmt.Sprintf("Backup complete: %s (Files: %d, Added: %s)",
+				msg.snapshotID[:8], msg.stats.FilesProcessed, formatBytes(msg.stats.BytesAdded)))
+		} else {
+			m.backup.Complete(false)
+			m.backup.SetError(msg.error)
+		}
 		return m, nil
 
 	case tea.WindowSizeMsg:
@@ -153,8 +170,12 @@ func (m *model) handleKey(msg tea.KeyMsg) tea.Cmd {
 			m.repos.SetEditing(true)
 		}
 	case "b":
-		if m.screen == ui.ScreenBackup && m.repos.GetSelectedRepo() != "" {
-			m.startBackup()
+		if m.screen == ui.ScreenBackup && m.backup.GetSelectedRepo() != "" && !m.backup.IsRunning() {
+			return m.startBackupAsync()
+		}
+	case "c":
+		if m.screen == ui.ScreenBackup && m.backup.IsRunning() {
+			m.backup.Cancel()
 		}
 	}
 	return nil
@@ -165,21 +186,21 @@ func (m *model) handleHelpKey(msg tea.KeyMsg) tea.Cmd {
 	return nil
 }
 
-func (m *model) startBackup() {
+func (m *model) startBackupAsync() tea.Cmd {
 	repoName := m.backup.GetSelectedRepo()
 	repo := m.findRepoByName(repoName)
 	if repo == nil {
-		m.err = fmt.Errorf("repository not found")
-		return
+		m.backup.SetError(fmt.Sprintf("repository %q not found", repoName))
+		return nil
 	}
 
 	exec, err := m.getExecutor(repo)
 	if err != nil {
-		m.err = err
-		return
+		m.backup.SetError(err.Error())
+		return nil
 	}
 
-	ctx := context.Background()
+	m.backupCtx, m.backupCancel = context.WithCancel(context.Background())
 	paths := m.backup.GetBackupPaths()
 	if len(paths) == 0 && len(repo.BackupPaths) > 0 {
 		paths = repo.BackupPaths
@@ -190,13 +211,20 @@ func (m *model) startBackup() {
 		restic.BackupWithTags(m.backup.GetTags()),
 	}
 
-	result, err := exec.Backup(ctx, paths, opts...)
-	if err != nil {
-		m.err = err
-		return
+	return func() tea.Msg {
+		result, err := exec.Backup(m.backupCtx, paths, opts...)
+		if err != nil {
+			return backupResultMsg{success: false, error: err.Error()}
+		}
+		return backupResultMsg{success: true, snapshotID: result.SnapshotID, stats: result.Stats}
 	}
+}
 
-	m.backup.SetProgress(fmt.Sprintf("Backup complete: %s", result.SnapshotID))
+type backupResultMsg struct {
+	success    bool
+	snapshotID string
+	stats      restic.BackupStats
+	error      string
 }
 
 func (m *model) getExecutor(repo *config.Repository) (*restic.ResticExecutor, error) {
@@ -275,6 +303,19 @@ type errorMsg struct {
 
 type configLoadedMsg struct {
 	config *config.Config
+}
+
+func formatBytes(bytes int64) string {
+	const unit = int64(1024)
+	if bytes < unit {
+		return fmt.Sprintf("%d B", bytes)
+	}
+	divisor, exp := int64(unit), 0
+	for n := bytes / unit; n >= unit; n /= unit {
+		divisor *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.1f %cB", float64(bytes)/float64(divisor), "KMGTPE"[exp])
 }
 
 func main() {

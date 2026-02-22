@@ -365,6 +365,20 @@ func (m *BackupModel) Complete(success bool) {
 	}
 }
 
+func (m BackupModel) IsRunning() bool {
+	return m.inProgress
+}
+
+func (m *BackupModel) Cancel() {
+	m.inProgress = false
+	m.progress = "Backup cancelled"
+}
+
+func (m *BackupModel) SetError(err string) {
+	m.inProgress = false
+	m.progress = "Error: " + err
+}
+
 type RestoreModel struct {
 	repos           []string
 	selectedRepoIdx int
