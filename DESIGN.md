@@ -193,7 +193,6 @@ graph TB
     app --> models
     app --> config
     app --> restic
-    config --> repository
 ```
 
 ### Component Diagram
@@ -391,11 +390,13 @@ type Snapshot struct {
 
 ### Config Structure
 
+The Config is the root structure containing all application settings. The Identity is used for age encryption/decryption of the config file at rest.
+
 ```mermaid
 erDiagram
     Config ||--o| Repository : contains
     Config ||--o| Settings : contains
-    Config ||--o| Identity : contains
+    Config ||--o| Identity : "used for encryption"
     
     Repository ||--o| RetentionPolicy : has
     
