@@ -374,17 +374,6 @@ type Snapshot struct {
     Parent     string    // Parent snapshot ID
 }
 ```
-            User->>TUI: See success message
-        else failure
-            Model->>BackupModel: Complete(false)
-            Model->>BackupModel: SetError(msg.error)
-            User->>TUI: See error message
-        end
-    else backup already running
-        User->>TUI: Press 'c' to cancel
-        Model->>BackupModel: Cancel()
-    end
-```
 
 ## Data Models
 
