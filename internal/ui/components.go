@@ -18,6 +18,7 @@ type TextInputModel struct {
 	focused   bool
 	validator func(string) error
 	err       error
+	prevValue string
 }
 
 func NewTextInput(label, placeholder string) TextInputModel {
@@ -27,19 +28,24 @@ func NewTextInput(label, placeholder string) TextInputModel {
 	ti.Focus()
 
 	return TextInputModel{
-		input:   ti,
-		label:   label,
-		help:    "",
-		focused: true,
+		input:     ti,
+		label:     label,
+		help:      "",
+		focused:   true,
+		prevValue: "",
 	}
 }
 
 func (m TextInputModel) Update(msg tea.Msg) (TextInputModel, tea.Cmd) {
 	var cmds []tea.Cmd
 
+	currentValue := m.input.Value()
+
 	ti, cmd := m.input.Update(msg)
 	m.input = ti
 	cmds = append(cmds, cmd)
+
+	newValue := m.input.Value()
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -55,8 +61,8 @@ func (m TextInputModel) Update(msg tea.Msg) (TextInputModel, tea.Cmd) {
 			}
 		}
 	default:
-		if m.focused && m.validator != nil {
-			m.err = m.validator(m.input.Value())
+		if m.focused && m.validator != nil && newValue != currentValue {
+			m.err = m.validator(newValue)
 		}
 	}
 
@@ -108,9 +114,11 @@ func (m *TextInputModel) IsValid() bool {
 }
 
 type PasswordInputModel struct {
-	input   textinput.Model
-	label   string
-	focused bool
+	input     textinput.Model
+	label     string
+	focused   bool
+	validator func(string) error
+	err       error
 }
 
 func NewPasswordInput(label string) PasswordInputModel {
@@ -128,24 +136,46 @@ func NewPasswordInput(label string) PasswordInputModel {
 }
 
 func (m PasswordInputModel) Update(msg tea.Msg) (PasswordInputModel, tea.Cmd) {
+	currentValue := m.input.Value()
+
+	ti, cmd := m.input.Update(msg)
+	m.input = ti
+
+	newValue := m.input.Value()
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		if msg.String() == "esc" && m.focused {
 			m.focused = false
 			m.input.Blur()
+			m.err = nil
+		}
+		if msg.String() == "enter" && m.focused {
+			if m.validator != nil {
+				m.err = m.validator(newValue)
+			}
+		}
+	default:
+		if m.focused && m.validator != nil && newValue != currentValue {
+			m.err = m.validator(newValue)
 		}
 	}
 
-	ti, cmd := m.input.Update(msg)
-	m.input = ti
 	return m, cmd
 }
 
 func (m PasswordInputModel) View() string {
+	var view string
+	if m.err != nil {
+		view = ErrorStyle.Render(m.input.View()) + "\n" + ErrorStyle.Render(m.err.Error())
+	} else {
+		view = m.input.View()
+	}
+
 	return lipgloss.JoinVertical(
 		lipgloss.Left,
 		LabelStyle.Render(m.label),
-		m.input.View(),
+		view,
 	)
 }
 
@@ -153,8 +183,19 @@ func (m *PasswordInputModel) SetValue(value string) {
 	m.input.SetValue(value)
 }
 
-func (m *PasswordInputModel) Value() string {
+func (m PasswordInputModel) Value() string {
 	return m.input.Value()
+}
+
+func (m *PasswordInputModel) SetValidator(fn func(string) error) {
+	m.validator = fn
+}
+
+func (m PasswordInputModel) IsValid() bool {
+	if m.validator == nil {
+		return true
+	}
+	return m.validator(m.input.Value()) == nil
 }
 
 func (m *PasswordInputModel) Focus() {
