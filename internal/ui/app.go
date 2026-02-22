@@ -133,6 +133,10 @@ var (
 				Foreground(lipgloss.Color("196")).
 				Bold(true).
 				Underline(true)
+
+	LabelStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("99")).
+			Bold(true)
 )
 
 type Navigation struct {

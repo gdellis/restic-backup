@@ -2,7 +2,9 @@ package ui
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -35,41 +37,43 @@ func NewTextInput(label, placeholder string) TextInputModel {
 func (m TextInputModel) Update(msg tea.Msg) (TextInputModel, tea.Cmd) {
 	var cmds []tea.Cmd
 
+	ti, cmd := m.input.Update(msg)
+	m.input = ti
+	cmds = append(cmds, cmd)
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		keyStr := msg.String()
-		if keyStr == "esc" {
+		if keyStr == "esc" && m.focused {
 			m.focused = false
 			m.input.Blur()
+			m.err = nil
 		}
 		if keyStr == "enter" && m.focused {
 			if m.validator != nil {
 				m.err = m.validator(m.input.Value())
 			}
 		}
+	default:
+		if m.focused && m.validator != nil {
+			m.err = m.validator(m.input.Value())
+		}
 	}
-
-	ti, cmd := m.input.Update(msg)
-	m.input = ti
-	cmds = append(cmds, cmd)
 
 	return m, tea.Batch(cmds...)
 }
 
 func (m TextInputModel) View() string {
-	labelStyle := lipgloss.Style{}.Foreground(lipgloss.Color("99")).Bold(true)
-	errStyle := ErrorStyle
-
 	var view string
 	if m.err != nil {
-		view = errStyle.Render(m.input.View()) + "\n" + errStyle.Render(m.err.Error())
+		view = ErrorStyle.Render(m.input.View()) + "\n" + ErrorStyle.Render(m.err.Error())
 	} else {
 		view = m.input.View()
 	}
 
 	return lipgloss.JoinVertical(
 		lipgloss.Left,
-		labelStyle.Render(m.label),
+		LabelStyle.Render(m.label),
 		view,
 	)
 }
@@ -126,7 +130,7 @@ func NewPasswordInput(label string) PasswordInputModel {
 func (m PasswordInputModel) Update(msg tea.Msg) (PasswordInputModel, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		if msg.String() == "esc" {
+		if msg.String() == "esc" && m.focused {
 			m.focused = false
 			m.input.Blur()
 		}
@@ -138,11 +142,9 @@ func (m PasswordInputModel) Update(msg tea.Msg) (PasswordInputModel, tea.Cmd) {
 }
 
 func (m PasswordInputModel) View() string {
-	labelStyle := lipgloss.Style{}.Foreground(lipgloss.Color("99")).Bold(true)
-
 	return lipgloss.JoinVertical(
 		lipgloss.Left,
-		labelStyle.Render(m.label),
+		LabelStyle.Render(m.label),
 		m.input.View(),
 	)
 }
@@ -204,13 +206,10 @@ func (m *ProgressBarModel) View() string {
 	empty := m.width - filled
 
 	fillStr := string(rune(32))
-	bar := ""
-	for i := 0; i < filled; i++ {
-		bar += ProgressFillStyle.Render(fillStr)
-	}
-	for i := 0; i < empty; i++ {
-		bar += ProgressEmptyStyle.Render(fillStr)
-	}
+	filledBar := strings.Repeat(fillStr, filled)
+	emptyBar := strings.Repeat(fillStr, empty)
+
+	bar := ProgressFillStyle.Render(filledBar) + ProgressEmptyStyle.Render(emptyBar)
 
 	result := fmt.Sprintf("[%s]", bar)
 
@@ -219,9 +218,8 @@ func (m *ProgressBarModel) View() string {
 	}
 
 	if m.label != "" {
-		labelStyle := lipgloss.Style{}.Foreground(lipgloss.Color("99"))
 		result = lipgloss.JoinHorizontal(lipgloss.Left,
-			labelStyle.Render(m.label+":"),
+			LabelStyle.Render(m.label+":"),
 			" ",
 			result,
 		)
@@ -391,11 +389,11 @@ func (m SelectModel) Update(msg tea.Msg) (SelectModel, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		if !m.expanded {
-			if msg.String() == "enter" || msg.String() == " " {
+			if key.Matches(msg, DefaultKeyMap.Enter) || msg.String() == " " {
 				m.expanded = true
 				m.focused = true
 			}
-			if msg.String() == "down" || msg.String() == "j" {
+			if key.Matches(msg, DefaultKeyMap.Down) {
 				if m.selected < len(m.filtered)-1 {
 					m.selected++
 					if m.selected-m.scroll > 8 {
@@ -403,7 +401,7 @@ func (m SelectModel) Update(msg tea.Msg) (SelectModel, tea.Cmd) {
 					}
 				}
 			}
-			if msg.String() == "up" || msg.String() == "k" {
+			if key.Matches(msg, DefaultKeyMap.Up) {
 				if m.selected > 0 {
 					m.selected--
 					if m.selected < m.scroll {
@@ -412,15 +410,15 @@ func (m SelectModel) Update(msg tea.Msg) (SelectModel, tea.Cmd) {
 				}
 			}
 		} else {
-			if msg.String() == "escape" {
+			if key.Matches(msg, DefaultKeyMap.Escape) {
 				m.expanded = false
 				m.focused = false
 			}
-			if msg.String() == "enter" {
+			if key.Matches(msg, DefaultKeyMap.Enter) {
 				m.expanded = false
 				m.focused = false
 			}
-			if msg.String() == "down" || msg.String() == "j" {
+			if key.Matches(msg, DefaultKeyMap.Down) {
 				if m.selected < len(m.filtered)-1 {
 					m.selected++
 					if m.selected-m.scroll > 8 {
@@ -428,7 +426,7 @@ func (m SelectModel) Update(msg tea.Msg) (SelectModel, tea.Cmd) {
 					}
 				}
 			}
-			if msg.String() == "up" || msg.String() == "k" {
+			if key.Matches(msg, DefaultKeyMap.Up) {
 				if m.selected > 0 {
 					m.selected--
 					if m.selected < m.scroll {
@@ -442,8 +440,6 @@ func (m SelectModel) Update(msg tea.Msg) (SelectModel, tea.Cmd) {
 }
 
 func (m SelectModel) View() string {
-	labelStyle := lipgloss.Style{}.Foreground(lipgloss.Color("99")).Bold(true)
-
 	if !m.expanded {
 		selectedLabel := ""
 		if len(m.filtered) > 0 && m.selected >= 0 && m.selected < len(m.filtered) {
@@ -455,7 +451,7 @@ func (m SelectModel) View() string {
 		}
 		return lipgloss.JoinVertical(
 			lipgloss.Left,
-			labelStyle.Render("Select:"),
+			LabelStyle.Render("Select:"),
 			lipgloss.JoinHorizontal(lipgloss.Left, trigger, " ▼"),
 		)
 	}
@@ -495,7 +491,7 @@ func (m SelectModel) View() string {
 
 	return lipgloss.JoinVertical(
 		lipgloss.Left,
-		labelStyle.Render("Select:"),
+		LabelStyle.Render("Select:"),
 		optionsView,
 	)
 }
@@ -592,18 +588,20 @@ func (m *StatusBadgeModel) SetMessage(message string) {
 }
 
 type ConfirmDialogModel struct {
-	title     string
-	message   string
-	confirmed bool
-	focused   bool
+	title          string
+	message        string
+	confirmed      bool
+	focused        bool
+	selectedButton int
 }
 
 func NewConfirmDialog(title, message string) ConfirmDialogModel {
 	return ConfirmDialogModel{
-		title:     title,
-		message:   message,
-		confirmed: false,
-		focused:   false,
+		title:          title,
+		message:        message,
+		confirmed:      false,
+		focused:        false,
+		selectedButton: 0,
 	}
 }
 
@@ -611,11 +609,26 @@ func (m ConfirmDialogModel) Update(msg tea.Msg) (ConfirmDialogModel, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		if m.focused {
-			keyStr := msg.String()
-			if keyStr == "y" || keyStr == "enter" {
+			if key.Matches(msg, DefaultKeyMap.Left) {
+				if m.selectedButton > 0 {
+					m.selectedButton--
+				}
+			}
+			if key.Matches(msg, DefaultKeyMap.Right) {
+				if m.selectedButton < 1 {
+					m.selectedButton++
+				}
+			}
+			if key.Matches(msg, DefaultKeyMap.Enter) {
+				m.confirmed = m.selectedButton == 0
+			}
+			if key.Matches(msg, DefaultKeyMap.Escape) {
+				m.confirmed = false
+			}
+			if msg.String() == "y" {
 				m.confirmed = true
 			}
-			if keyStr == "n" || keyStr == "escape" {
+			if msg.String() == "n" {
 				m.confirmed = false
 			}
 		}
@@ -647,8 +660,9 @@ func (m ConfirmDialogModel) View() string {
 	yesBtn := ConfirmYesStyle
 	noBtn := ConfirmNoStyle
 
-	if m.focused {
+	if m.focused && m.selectedButton == 0 {
 		yesBtn = ConfirmYesStyleSelected
+	} else if m.focused && m.selectedButton == 1 {
 		noBtn = ConfirmNoStyleSelected
 	}
 
