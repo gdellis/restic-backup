@@ -157,14 +157,14 @@ sequenceDiagram
 
 ```mermaid
 erDiagram
-    Config ||--o{ Repository : contains
-    Config ||--o Settings : contains
-    Config ||--o Identity : contains
+    Config ||--o| Repository : contains
+    Config ||--o| Settings : contains
+    Config ||--o| Identity : contains
     
-    Repository ||--o RetentionPolicy : has
+    Repository ||--o| RetentionPolicy : has
     
-    Settings ||--o Notifications : has
-    Notifications ||--o SMTPConfig : has
+    Settings ||--o| Notifications : has
+    Notifications ||--o| SMTPConfig : has
     
     Repository {
         string id
