@@ -15,6 +15,7 @@ const (
 	ScreenBackup
 	ScreenRestore
 	ScreenSnapshots
+	ScreenRetention
 	ScreenSettings
 )
 
@@ -190,6 +191,7 @@ func GetMenuItems(active Screen) []string {
 		fmt.Sprintf("%s Backup", getIcon(ScreenBackup, active)),
 		fmt.Sprintf("%s Restore", getIcon(ScreenRestore, active)),
 		fmt.Sprintf("%s Snapshots", getIcon(ScreenSnapshots, active)),
+		fmt.Sprintf("%s Retention", getIcon(ScreenRetention, active)),
 		fmt.Sprintf("%s Settings", getIcon(ScreenSettings, active)),
 	}
 }

@@ -622,6 +622,164 @@ func (m SnapshotsModel) GetSelectedSnapshot() string {
 	return m.snapshots[m.selectedSnapIdx]
 }
 
+type RetentionModel struct {
+	repos         []string
+	selectedRepoIdx int
+	keepLast     int
+	keepDaily    int
+	keepWeekly   int
+	keepMonthly  int
+	keepYearly   int
+	keepTags     string
+	prune        bool
+	dryRun       bool
+	previewMode  bool
+}
+
+func NewRetentionModel() RetentionModel {
+	return RetentionModel{
+		repos:       []string{},
+		keepLast:    7,
+		keepDaily:   7,
+		keepWeekly:  4,
+		keepMonthly: 6,
+		keepYearly: 3,
+		keepTags:   "",
+		prune:      false,
+		dryRun:     true,
+		previewMode: true,
+	}
+}
+
+func (m RetentionModel) Update(msg tea.Msg) (RetentionModel, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "down", "j":
+			if m.selectedRepoIdx < len(m.repos)-1 {
+				m.selectedRepoIdx++
+			}
+		case "up", "k":
+			if m.selectedRepoIdx > 0 {
+				m.selectedRepoIdx--
+			}
+		case "p":
+			m.prune = !m.prune
+		case "d":
+			m.dryRun = !m.dryRun
+		case "enter":
+			m.previewMode = !m.previewMode
+		}
+	}
+	return m, nil
+}
+
+func (m RetentionModel) View() string {
+	header := TitleStyle.Render("Retention Policy")
+	menuItems := GetMenuItems(ScreenRetention)
+	menu := renderMenu(menuItems, 5)
+	
+	var repoList string
+	for i, r := range m.repos {
+		prefix := "  "
+		if i == m.selectedRepoIdx {
+			prefix = "● "
+		}
+		repoList += prefix + r + "\n"
+	}
+	if repoList == "" {
+		repoList = "  No repositories configured"
+	}
+	
+	pruneStatus := "Disabled"
+	if m.prune {
+		pruneStatus = "Enabled"
+	}
+	
+	dryRunStatus := "Preview Only"
+	if !m.dryRun {
+		dryRunStatus = "Apply Now"
+	}
+	
+	content := BorderStyle.Render(
+		lipgloss.JoinVertical(
+			lipgloss.Left,
+			lipgloss.Style{}.Foreground(lipgloss.Color("99")).Bold(true).Render("Repository:"),
+			repoList,
+			"",
+			lipgloss.Style{}.Foreground(lipgloss.Color("99")).Bold(true).Render("Retention Options:"),
+			fmt.Sprintf("  Keep Last:    %d", m.keepLast),
+			fmt.Sprintf("  Keep Daily:   %d", m.keepDaily),
+			fmt.Sprintf("  Keep Weekly:  %d", m.keepWeekly),
+			fmt.Sprintf("  Keep Monthly: %d", m.keepMonthly),
+			fmt.Sprintf("  Keep Yearly: %d", m.keepYearly),
+			fmt.Sprintf("  Keep Tags:    %s", m.keepTags),
+			"",
+			lipgloss.Style{}.Foreground(lipgloss.Color("99")).Bold(true).Render("Options:"),
+			fmt.Sprintf("  Prune:    %s", pruneStatus),
+			fmt.Sprintf("  Mode:     %s", dryRunStatus),
+			"",
+			InfoStyle.Render("p: Toggle prune • d: Toggle dry-run • Enter: Confirm"),
+		),
+	)
+	
+	return lipgloss.JoinVertical(
+		lipgloss.Left,
+		header,
+		"",
+		lipgloss.JoinHorizontal(
+			lipgloss.Top,
+			menu,
+			content,
+		),
+		"",
+	)
+}
+
+func (m *RetentionModel) SetRepositories(repos []config.Repository) {
+	m.repos = make([]string, len(repos))
+	for i, r := range repos {
+		m.repos[i] = r.Name
+	}
+}
+
+func (m RetentionModel) GetSelectedRepo() string {
+	if len(m.repos) == 0 {
+		return ""
+	}
+	return m.repos[m.selectedRepoIdx]
+}
+
+func (m RetentionModel) GetForgetOptions() []restic.ForgetOption {
+	opts := []restic.ForgetOption{}
+	
+	if m.keepLast > 0 {
+		opts = append(opts, restic.ForgetKeepLast(m.keepLast))
+	}
+	if m.keepDaily > 0 {
+		opts = append(opts, restic.ForgetKeepDaily(m.keepDaily))
+	}
+	if m.keepWeekly > 0 {
+		opts = append(opts, restic.ForgetKeepWeekly(m.keepWeekly))
+	}
+	if m.keepMonthly > 0 {
+		opts = append(opts, restic.ForgetKeepMonthly(m.keepMonthly))
+	}
+	if m.keepYearly > 0 {
+		opts = append(opts, restic.ForgetKeepYearly(m.keepYearly))
+	}
+	
+	if m.dryRun {
+		opts = append(opts, restic.ForgetDryRun())
+	}
+	
+	if m.prune {
+		opts = append(opts, restic.ForgetPrune())
+	}
+	
+	return opts
+}
+
 type SettingsModel struct {
 	resticPath     string
 	defaultBackend string

@@ -177,5 +177,23 @@ func (r *Repository) GetPassword() (string, error) {
 		}
 		return pw, nil
 	}
+	if r.PasswordOP != "" {
+		op := NewOPClient("")
+		password, err := op.GetPassword(r.PasswordOP, "password")
+		if err != nil {
+			return "", fmt.Errorf("1Password lookup failed: %w", err)
+		}
+		return password, nil
+	}
 	return r.Password, nil
+}
+
+func (r *Repository) GetPasswordSource() string {
+	if r.PasswordEnv != "" {
+		return "env:" + r.PasswordEnv
+	}
+	if r.PasswordOP != "" {
+		return "1Password:" + r.PasswordOP
+	}
+	return "encrypted"
 }

@@ -26,6 +26,7 @@ type model struct {
 	backup     ui.BackupModel
 	restore    ui.RestoreModel
 	snapshots  ui.SnapshotsModel
+	retention  ui.RetentionModel
 	settings   ui.SettingsModel
 	
 	showHelp    bool
@@ -40,6 +41,7 @@ func newModel() *model {
 		backup:   ui.NewBackupModel(),
 		restore:  ui.NewRestoreModel(),
 		snapshots: ui.NewSnapshotsModel(),
+		retention: ui.NewRetentionModel(),
 		settings: ui.NewSettingsModel(),
 	}
 }
@@ -79,6 +81,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.backup.SetRepositories(m.config.Repositories)
 		m.restore.SetRepositories(m.config.Repositories)
 		m.snapshots.SetRepositories(m.config.Repositories)
+		m.retention.SetRepositories(m.config.Repositories)
 		if m.config.Settings != nil {
 			m.settings.SetSettings(m.config.Settings)
 		}
@@ -120,6 +123,8 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.restore, cmd = m.restore.Update(msg)
 	case ui.ScreenSnapshots:
 		m.snapshots, cmd = m.snapshots.Update(msg)
+	case ui.ScreenRetention:
+		m.retention, cmd = m.retention.Update(msg)
 	case ui.ScreenSettings:
 		m.settings, cmd = m.settings.Update(msg)
 	}
@@ -140,6 +145,8 @@ func (m *model) handleKey(msg tea.KeyMsg) tea.Cmd {
 	case "5":
 		m.screen = ui.ScreenSnapshots
 	case "6":
+		m.screen = ui.ScreenRetention
+	case "7":
 		m.screen = ui.ScreenSettings
 	case "n":
 		if m.screen == ui.ScreenRepositories {
@@ -240,11 +247,13 @@ func (m *model) View() string {
 		content = m.restore.View()
 	case ui.ScreenSnapshots:
 		content = m.snapshots.View()
+	case ui.ScreenRetention:
+		content = m.retention.View()
 	case ui.ScreenSettings:
 		content = m.settings.View()
 	}
 	
-	help := ui.HelpStyle.Render("1:Dash 2:Repos 3:Backup 4:Restore 5:Snaps 6:Settings q:Quit ?:Help")
+	help := ui.HelpStyle.Render("1:Dash 2:Repos 3:Backup 4:Restore 5:Snaps 6:Retent 7:Settings q:Quit ?:Help")
 	
 	layout := lipgloss.Place(
 		m.width, m.height,

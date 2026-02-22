@@ -30,6 +30,7 @@ type Repository struct {
 	Path        string            `json:"path"`
 	Password    string            `json:"password,omitempty"`
 	PasswordEnv string            `json:"password_env,omitempty"`
+	PasswordOP  string            `json:"password_op,omitempty"`
 	Options     map[string]string `json:"options,omitempty"`
 	BackupPaths []string         `json:"backup_paths,omitempty"`
 	Exclude     []string         `json:"exclude,omitempty"`
