@@ -226,9 +226,9 @@ classDiagram
         +Update(tea.Msg) (tea.Model, tea.Cmd)
         +View() string
         +SetRepositories([]Repository)
-        +GetBackupPaths() []string
-        +GetExcludePatterns() []string
-        +GetTags() []string
+        +GetBackupPaths() []string  // Returns comma-split paths
+        +GetExcludePatterns() []string  // Returns comma-split patterns
+        +GetTags() []string  // Returns comma-split tags
         +IsRunning() bool
         +Cancel()
     }
@@ -291,8 +291,14 @@ sequenceDiagram
         par Async execution
             Model->>ResticExecutor: Backup(ctx, paths, opts)
             ResticExecutor->>ResticCLI: restic backup --json [paths]
-            ResticCLI-->>ResticExecutor: JSON output
-            ResticExecutor-->>Model: BackupResult
+            
+            alt success
+                ResticCLI-->>ResticExecutor: JSON{ snapshot_id, stats }
+                ResticExecutor-->>Model: BackupResult
+            else error
+                ResticCLI-->>ResticExecutor: Error
+                ResticExecutor-->>Model: error
+            end
         and UI Update
             TUI->>Model: Update()
             Model->>BackupModel: Update()
@@ -302,6 +308,73 @@ sequenceDiagram
         alt success
             Model->>BackupModel: Complete(true)
             Model->>BackupModel: SetProgress(stats)
+            User->>TUI: See success message
+        else failure
+            Model->>BackupModel: Complete(false)
+            Model->>BackupModel: SetError(msg.error)
+            User->>TUI: See error message
+        end
+    else backup already running
+        User->>TUI: Press 'c' to cancel
+        Model->>BackupModel: Cancel()
+    end
+```
+
+## Type Definitions
+
+### Screen
+
+Screen is an enum type representing the current navigation state:
+
+```go
+type Screen int
+
+const (
+    ScreenDashboard Screen = iota
+    ScreenRepositories
+    ScreenBackup
+    ScreenRestore
+    ScreenSnapshots
+    ScreenRetention
+    ScreenSettings
+)
+```
+
+### BackupResult
+
+Returned from successful backup operations:
+
+```go
+type BackupResult struct {
+    SnapshotID string      // Hex ID of created snapshot
+    Stats      BackupStats // Files processed, bytes added, etc.
+}
+
+type BackupStats struct {
+    FilesNew       int   // New files backed up
+    FilesChanged   int   // Modified files
+    FilesUnchanged int   // Unchanged files
+    BytesAdded     int64 // Size of new data
+    FilesProcessed int   // Total files scanned
+}
+```
+
+### Snapshot
+
+Represents a backup snapshot in the repository:
+
+```go
+type Snapshot struct {
+    ID         string    // Unique identifier
+    Time       time.Time // Creation timestamp
+    Tree       string    // Root tree ID
+    Paths      []string  // Backup source paths
+    Hostname   string    // Machine name
+    Username   string    // User who created
+    Tags       []string  // User-defined tags
+    Parent     string    // Parent snapshot ID
+}
+```
             User->>TUI: See success message
         else failure
             Model->>BackupModel: Complete(false)
