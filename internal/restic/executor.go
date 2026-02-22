@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	ErrNotFound  = errors.New("restic not found")
+	ErrNotFound   = errors.New("restic not found")
 	ErrExecFailed = errors.New("restic command failed")
 )
 
@@ -158,18 +158,18 @@ func InitWithPassword(password string) InitOption {
 }
 
 type Snapshot struct {
-	ID        string    `json:"id"`
-	Time      time.Time `json:"time"`
-	Tree      string    `json:"tree"`
-	Paths     []string  `json:"paths"`
-	Hostname  string    `json:"hostname"`
-	Username  string    `json:"username"`
-	UID       int       `json:"uid"`
-	GID       int       `json:"gid"`
-	Tags      []string  `json:"tags"`
-	Parent    string    `json:"parent,omitempty"`
-	Program   string    `json:"program,omitempty"`
-	ExitStatus int      `json:"exit_status,omitempty"`
+	ID         string    `json:"id"`
+	Time       time.Time `json:"time"`
+	Tree       string    `json:"tree"`
+	Paths      []string  `json:"paths"`
+	Hostname   string    `json:"hostname"`
+	Username   string    `json:"username"`
+	UID        int       `json:"uid"`
+	GID        int       `json:"gid"`
+	Tags       []string  `json:"tags"`
+	Parent     string    `json:"parent,omitempty"`
+	Program    string    `json:"program,omitempty"`
+	ExitStatus int       `json:"exit_status,omitempty"`
 }
 
 func (e *ResticExecutor) Snapshots(ctx context.Context, filters ...SnapshotFilter) ([]Snapshot, error) {
@@ -225,21 +225,21 @@ func FilterLatest() SnapshotFilter {
 }
 
 type BackupStats struct {
-	FilesNew        int     `json:"files_new"`
-	FilesChanged    int     `json:"files_changed"`
-	FilesUnchanged int     `json:"files_unchanged"`
-	DirsNew        int     `json:"dirs_new"`
-	DirsChanged    int     `json:"dirs_changed"`
-	DirsUnchanged  int     `json:"dirs_unchanged"`
-	TotalBytes     int64   `json:"total_bytes_processed"`
-	FilesProcessed int     `json:"files_processed"`
-	BytesAdded     int64   `json:"bytes_added"`
-	BytesTotal     int64   `json:"total_bytes"`
+	FilesNew       int   `json:"files_new"`
+	FilesChanged   int   `json:"files_changed"`
+	FilesUnchanged int   `json:"files_unchanged"`
+	DirsNew        int   `json:"dirs_new"`
+	DirsChanged    int   `json:"dirs_changed"`
+	DirsUnchanged  int   `json:"dirs_unchanged"`
+	TotalBytes     int64 `json:"total_bytes_processed"`
+	FilesProcessed int   `json:"files_processed"`
+	BytesAdded     int64 `json:"bytes_added"`
+	BytesTotal     int64 `json:"total_bytes"`
 }
 
 type BackupResult struct {
-	SnapshotID string       `json:"snapshot_id"`
-	Stats     BackupStats  `json:"stats"`
+	SnapshotID string      `json:"snapshot_id"`
+	Stats      BackupStats `json:"stats"`
 }
 
 func (e *ResticExecutor) Backup(ctx context.Context, paths []string, opts ...BackupOption) (*BackupResult, error) {
@@ -325,18 +325,18 @@ func (e *ResticExecutor) Backup(ctx context.Context, paths []string, opts ...Bac
 }
 
 type BackupOptions struct {
-	Exclude        []string
-	ExcludeFile    string
-	Include        []string
-	Tags           []string
-	Host           string
-	DryRun         bool
-	Force          bool
-	Parent         string
-	OneFileSystem  bool
-	WithAtime      bool
-	Stdin          bool
-	StdinFilename  string
+	Exclude       []string
+	ExcludeFile   string
+	Include       []string
+	Tags          []string
+	Host          string
+	DryRun        bool
+	Force         bool
+	Parent        string
+	OneFileSystem bool
+	WithAtime     bool
+	Stdin         bool
+	StdinFilename string
 }
 
 type BackupOption func(*BackupOptions)
@@ -423,11 +423,11 @@ func (e *ResticExecutor) Restore(ctx context.Context, snapshotID string, opts ..
 }
 
 type RestoreOptions struct {
-	Target   string
-	Hex      bool
-	Include  []string
-	Exclude  []string
-	Verify   bool
+	Target  string
+	Hex     bool
+	Include []string
+	Exclude []string
+	Verify  bool
 }
 
 type RestoreOption func(*RestoreOptions)
@@ -552,7 +552,7 @@ func ForgetPrune() ForgetOption {
 
 type Stats struct {
 	TotalFileCount int   `json:"total_file_count"`
-	TotalSize     int64 `json:"total_size"`
+	TotalSize      int64 `json:"total_size"`
 }
 
 func (e *ResticExecutor) Stats(ctx context.Context, snapshotID string, opts ...StatsOption) (*Stats, error) {
@@ -619,8 +619,8 @@ func (e *ResticExecutor) Check(ctx context.Context, opts ...CheckOption) error {
 }
 
 type CheckOptions struct {
-	ReadData         bool
-	ReadDataSubset   string
+	ReadData       bool
+	ReadDataSubset string
 }
 
 type CheckOption func(*CheckOptions)
@@ -658,8 +658,8 @@ func (e *ResticExecutor) Prune(ctx context.Context, opts ...PruneOption) error {
 }
 
 type PruneOptions struct {
-	MaxRepackSize  int64
-	ChunkerRBSize  int64
+	MaxRepackSize int64
+	ChunkerRBSize int64
 }
 
 type PruneOption func(*PruneOptions)

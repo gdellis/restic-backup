@@ -57,8 +57,8 @@ var (
 )
 
 type Navigation struct {
-	Current  Screen
-	History  []Screen
+	Current Screen
+	History []Screen
 }
 
 func (n *Navigation) Push(screen Screen) {
@@ -81,18 +81,18 @@ func (n *Navigation) Reset() {
 }
 
 type KeyMap struct {
-	Up        key.Binding
-	Down      key.Binding
-	Left      key.Binding
-	Right     key.Binding
-	Enter     key.Binding
-	Escape    key.Binding
-	Quit      key.Binding
-	Help      key.Binding
-	Tab       key.Binding
-	BackTab   key.Binding
-	Delete    key.Binding
-	Refresh   key.Binding
+	Up      key.Binding
+	Down    key.Binding
+	Left    key.Binding
+	Right   key.Binding
+	Enter   key.Binding
+	Escape  key.Binding
+	Quit    key.Binding
+	Help    key.Binding
+	Tab     key.Binding
+	BackTab key.Binding
+	Delete  key.Binding
+	Refresh key.Binding
 }
 
 var DefaultKeyMap = KeyMap{

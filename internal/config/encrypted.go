@@ -12,7 +12,7 @@ import (
 )
 
 type EncryptedStorage struct {
-	identity age.Identity
+	identity  age.Identity
 	recipient age.Recipient
 }
 
@@ -58,7 +58,7 @@ func (e *EncryptedStorage) LoadAndDecrypt() (*Config, error) {
 	if err != nil {
 		if os.IsNotExist(err) {
 			return &Config{
-				Version: 1,
+				Version:      1,
 				Repositories: []Repository{},
 				Settings: &Settings{
 					Theme: "dark",
@@ -120,12 +120,12 @@ func LoadRecipient() (age.Recipient, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	identity, err := age.ParseX25519Identity(string(bytes.TrimSpace(data)))
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return identity.Recipient(), nil
 }
 

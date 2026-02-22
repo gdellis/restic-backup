@@ -14,35 +14,35 @@ import (
 )
 
 type model struct {
-	config      *config.Config
-	execMap     map[string]*restic.ResticExecutor
-	screen      ui.Screen
-	err         error
-	width      int
-	height     int
-	
-	dashboard   ui.DashboardModel
-	repos      ui.ReposModel
-	backup     ui.BackupModel
-	restore    ui.RestoreModel
-	snapshots  ui.SnapshotsModel
-	retention  ui.RetentionModel
-	settings   ui.SettingsModel
-	
-	showHelp    bool
+	config  *config.Config
+	execMap map[string]*restic.ResticExecutor
+	screen  ui.Screen
+	err     error
+	width   int
+	height  int
+
+	dashboard ui.DashboardModel
+	repos     ui.ReposModel
+	backup    ui.BackupModel
+	restore   ui.RestoreModel
+	snapshots ui.SnapshotsModel
+	retention ui.RetentionModel
+	settings  ui.SettingsModel
+
+	showHelp bool
 }
 
 func newModel() *model {
 	return &model{
-		screen:   ui.ScreenDashboard,
-		execMap:  make(map[string]*restic.ResticExecutor),
+		screen:    ui.ScreenDashboard,
+		execMap:   make(map[string]*restic.ResticExecutor),
 		dashboard: ui.NewDashboardModel(),
-		repos:    ui.NewReposModel(),
-		backup:   ui.NewBackupModel(),
-		restore:  ui.NewRestoreModel(),
+		repos:     ui.NewReposModel(),
+		backup:    ui.NewBackupModel(),
+		restore:   ui.NewRestoreModel(),
 		snapshots: ui.NewSnapshotsModel(),
 		retention: ui.NewRetentionModel(),
-		settings: ui.NewSettingsModel(),
+		settings:  ui.NewSettingsModel(),
 	}
 }
 
@@ -57,19 +57,19 @@ func (m *model) loadConfig() tea.Msg {
 	if err != nil {
 		return errorMsg{fmt.Errorf("failed to load identity: %w", err)}
 	}
-	
+
 	storage := config.NewEncryptedStorage(identity)
 	recipient, err := config.LoadRecipient()
 	if err != nil {
 		return errorMsg{fmt.Errorf("failed to load recipient: %w", err)}
 	}
 	storage.SetRecipient(recipient)
-	
+
 	cfg, err := storage.LoadAndDecrypt()
 	if err != nil {
 		return errorMsg{fmt.Errorf("failed to load config: %w", err)}
 	}
-	
+
 	return configLoadedMsg{config: cfg}
 }
 
@@ -86,16 +86,16 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.settings.SetSettings(m.config.Settings)
 		}
 		return m, nil
-		
+
 	case errorMsg:
 		m.err = msg.err
 		return m, nil
-		
+
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
 		return m, nil
-		
+
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", "ctrl+c":
@@ -103,14 +103,14 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "?":
 			m.showHelp = !m.showHelp
 		}
-		
+
 		if m.showHelp {
 			m.showHelp = false
 			return m, nil
 		}
 		m.handleKey(msg)
 	}
-	
+
 	var cmd tea.Cmd
 	switch m.screen {
 	case ui.ScreenDashboard:
@@ -128,7 +128,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case ui.ScreenSettings:
 		m.settings, cmd = m.settings.Update(msg)
 	}
-	
+
 	return m, cmd
 }
 
@@ -172,30 +172,30 @@ func (m *model) startBackup() {
 		m.err = fmt.Errorf("repository not found")
 		return
 	}
-	
+
 	exec, err := m.getExecutor(repo)
 	if err != nil {
 		m.err = err
 		return
 	}
-	
+
 	ctx := context.Background()
 	paths := m.backup.GetBackupPaths()
 	if len(paths) == 0 && len(repo.BackupPaths) > 0 {
 		paths = repo.BackupPaths
 	}
-	
+
 	opts := []restic.BackupOption{
 		restic.BackupWithExclude(m.backup.GetExcludePatterns()),
 		restic.BackupWithTags(m.backup.GetTags()),
 	}
-	
+
 	result, err := exec.Backup(ctx, paths, opts...)
 	if err != nil {
 		m.err = err
 		return
 	}
-	
+
 	m.backup.SetProgress(fmt.Sprintf("Backup complete: %s", result.SnapshotID))
 }
 
@@ -203,12 +203,12 @@ func (m *model) getExecutor(repo *config.Repository) (*restic.ResticExecutor, er
 	if exec, ok := m.execMap[repo.ID]; ok {
 		return exec, nil
 	}
-	
+
 	password, err := repo.GetPassword()
 	if err != nil {
 		return nil, err
 	}
-	
+
 	exec, err := restic.NewResticExecutor(
 		restic.WithRepository(repo.Path),
 		restic.WithPassword(password),
@@ -216,7 +216,7 @@ func (m *model) getExecutor(repo *config.Repository) (*restic.ResticExecutor, er
 	if err != nil {
 		return nil, err
 	}
-	
+
 	m.execMap[repo.ID] = exec
 	return exec, nil
 }
@@ -234,7 +234,7 @@ func (m *model) View() string {
 	if m.err != nil {
 		return ui.ErrorStyle.Render(fmt.Sprintf("Error: %v", m.err))
 	}
-	
+
 	var content string
 	switch m.screen {
 	case ui.ScreenDashboard:
@@ -252,9 +252,9 @@ func (m *model) View() string {
 	case ui.ScreenSettings:
 		content = m.settings.View()
 	}
-	
+
 	help := ui.HelpStyle.Render("1:Dash 2:Repos 3:Backup 4:Restore 5:Snaps 6:Retent 7:Settings q:Quit ?:Help")
-	
+
 	layout := lipgloss.Place(
 		m.width, m.height,
 		lipgloss.Center, lipgloss.Center,
@@ -265,7 +265,7 @@ func (m *model) View() string {
 			help,
 		),
 	)
-	
+
 	return layout
 }
 
@@ -279,27 +279,27 @@ type configLoadedMsg struct {
 
 func main() {
 	identPath := config.GetIdentityPath()
-	
+
 	if _, err := os.Stat(identPath); os.IsNotExist(err) {
 		if err := config.EnsureConfigDir(); err != nil {
 			fmt.Fprintf(os.Stderr, "Failed to create config dir: %v\n", err)
 			os.Exit(1)
 		}
-		
+
 		ident, err := config.LoadIdentity()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Failed to generate identity: %v\n", err)
 			os.Exit(1)
 		}
-		
+
 		defaultConfig := &config.Config{
-			Version: 1,
+			Version:      1,
 			Repositories: []config.Repository{},
 			Settings: &config.Settings{
 				Theme: "dark",
 			},
 		}
-		
+
 		storage := config.NewEncryptedStorage(ident)
 		recipient, err := config.LoadRecipient()
 		if err != nil {
@@ -307,15 +307,15 @@ func main() {
 			os.Exit(1)
 		}
 		storage.SetRecipient(recipient)
-		
+
 		if err := storage.EncryptAndSave(defaultConfig); err != nil {
 			fmt.Fprintf(os.Stderr, "Failed to save config: %v\n", err)
 			os.Exit(1)
 		}
 	}
-	
+
 	m := newModel()
-	
+
 	p := tea.NewProgram(m)
 	if err := p.Start(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
