@@ -496,6 +496,13 @@ flowchart LR
 - 1Password integration for password retrieval
 - Passwords never logged or displayed in plain text
 
+### Runtime Security
+
+- Passwords kept in memory only for duration of repository session
+- Context-based cancellation ensures operations clean up promptly
+- No sensitive data in UI rendered output
+- Age identity loaded once at startup, cleared after config decryption
+
 ## Future Considerations
 
 - **Scheduled backups**: Cron-based automatic backups
