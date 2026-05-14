@@ -1,0 +1,13 @@
+# Snyk policy file
+# Learn more: https://docs.snyk.io/snyk-cli/scan-and-maintain-projects-using-the-cli/manage-ignore-policies-in-the-snyk-cli
+
+ignore:
+  # False positives: These are test values in test code
+  # PasswordEnv stores the NAME of an environment variable, not the actual password
+  go/HardcodedPassword/test:
+    - 'internal/config/encrypted_test.go':
+        reason: 'Test code - CFG_KEY is the name of an environment variable, not a password'
+        expires: '2027-05-13T00:00:00.000Z'
+    - '**/encrypted_test.go':
+        reason: 'Test code - PasswordEnv stores env var names, not passwords'
+        expires: '2027-05-13T00:00:00.000Z'
