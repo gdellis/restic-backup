@@ -161,7 +161,7 @@ func TestRepositoryGetPasswordSource(t *testing.T) {
 	}{
 		{
 			name: "env password",
-			// deepcode ignore HardcodedPassword/test: PasswordEnv stores env var name, not password
+			// snyk:ignore[go/HardcodedPassword/test] PasswordEnv stores env var name, not password
 			repo:     Repository{PasswordEnv: "CFG_KEY"},
 			expected: "env:CFG_KEY",
 		},
@@ -177,7 +177,7 @@ func TestRepositoryGetPasswordSource(t *testing.T) {
 		},
 		{
 			name: "priority env over password",
-			// deepcode ignore HardcodedPassword/test: PasswordEnv stores env var name, not password
+			// snyk:ignore[go/HardcodedPassword/test] PasswordEnv stores env var name, not password
 			repo:     Repository{PasswordEnv: "CFG_KEY", Password: "secret"},
 			expected: "env:CFG_KEY",
 		},
