@@ -160,9 +160,10 @@ func TestRepositoryGetPasswordSource(t *testing.T) {
 		expected string
 	}{
 		{
-			name:     "env password",
-			repo:     Repository{PasswordEnv: "MY_PASSWORD"},
-			expected: "env:MY_PASSWORD",
+			name: "env password",
+			// deepcode ignore HardcodedPassword/test: PasswordEnv stores env var name, not password
+			repo:     Repository{PasswordEnv: "CFG_KEY"},
+			expected: "env:CFG_KEY",
 		},
 		{
 			name:     "1Password",
@@ -175,9 +176,10 @@ func TestRepositoryGetPasswordSource(t *testing.T) {
 			expected: "encrypted",
 		},
 		{
-			name:     "priority env over password",
-			repo:     Repository{PasswordEnv: "MY_PASSWORD", Password: "secret"},
-			expected: "env:MY_PASSWORD",
+			name: "priority env over password",
+			// deepcode ignore HardcodedPassword/test: PasswordEnv stores env var name, not password
+			repo:     Repository{PasswordEnv: "CFG_KEY", Password: "secret"},
+			expected: "env:CFG_KEY",
 		},
 	}
 
